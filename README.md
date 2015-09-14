@@ -24,8 +24,8 @@ For example,
 I work on a website monitoring platform, and in my development stack I often create some fake accounts with fake monitors which send measurement data through NSQ.
 I can tap into the stream with a tool called nsq_metrics_to_stdout and print out the data which looks like so:
 ```
-litmus.fake_org_1_endpoint_4.dev1.ping.min [endpoint_id:45 monitor_id:135 collector:dev1]
-litmus.fake_org_2_endpoint_1.dev1.http.dns [endpoint_id:46 monitor_id:138 collector:dev1]
+litmus.fake_org_1_endpoint_4.dev1.ping.min [more data here]
+litmus.fake_org_2_endpoint_1.dev1.http.dns [more data here]
 ```
 
 I often need to get insights on this multi-dimensional stream and for example, check which monitor (http vs ping vs ...) creates more volume, etc.
