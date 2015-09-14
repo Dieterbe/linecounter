@@ -6,21 +6,32 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 )
 
 var freq int
+var field int
 
 func init() {
-	flag.IntVar(&freq, "freq", 1000, "report frequency in ms")
+	flag.IntVar(&freq, "freq", 1000, "report frequency in ms (default:1000)")
+	flag.IntVar(&field, "f", -1, "seggregate by given whitespace separated field value. fields are numbered from 1 like cut and awk. (default -1 to disable)")
 }
 
 func main() {
 	flag.Parse()
-	tracker()
+	if field == 0 {
+		fmt.Fprintln(os.Stderr, "fields are numbered from 1")
+		os.Exit(2)
+	}
+	if field < 0 {
+		lineTracker()
+	} else {
+		seggregatedLineTracker(field - 1)
+	}
 }
 
-func tracker() {
+func lineTracker() {
 	data := make(chan int)
 	exit := make(chan int)
 	reader := bufio.NewReader(os.Stdin)
@@ -52,6 +63,63 @@ func tracker() {
 			os.Exit(ret)
 		case diff := <-data:
 			counter += diff
+		}
+	}
+}
+
+func seggregatedLineTracker(index int) {
+	data := make(chan string)
+	exit := make(chan int)
+	reader := bufio.NewReader(os.Stdin)
+	counter := make(map[string]int)
+
+	processLine := func(line string) {
+		fields := strings.Fields(line)
+		if index < len(fields) {
+			data <- fields[index]
+		} else {
+			data <- "null"
+		}
+	}
+
+	printCounters := func(header string) {
+		fmt.Println(header)
+		for field, count := range counter {
+			fmt.Println(field, count)
+		}
+	}
+
+	go func() {
+		for {
+			line, err := reader.ReadString('\n')
+			if err == io.EOF {
+				if len(line) > 0 {
+					processLine(line)
+				}
+				exit <- 0
+			}
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err.Error())
+				exit <- 2
+			}
+			processLine(line)
+		}
+	}()
+	tick := time.NewTicker(time.Duration(freq) * time.Millisecond)
+	for {
+		select {
+		case <-tick.C:
+			printCounters(" ============================= ")
+			newCounter := make(map[string]int)
+			for key := range counter {
+				newCounter[key] = 0
+			}
+			counter = newCounter
+		case ret := <-exit:
+			printCounters(" === (incomplete interval) === ")
+			os.Exit(ret)
+		case str := <-data:
+			counter[str] += 1
 		}
 	}
 }
