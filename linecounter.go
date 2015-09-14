@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 	"strings"
 	"time"
 )
@@ -84,8 +85,13 @@ func seggregatedLineTracker(index int) {
 
 	printCounters := func(header string) {
 		fmt.Println(header)
-		for field, count := range counter {
-			fmt.Println(field, count)
+		keys := make([]string, 0, len(counter))
+		for field := range counter {
+			keys = append(keys, field)
+		}
+		sort.Strings(keys)
+		for _, field := range keys {
+			fmt.Println(field, counter[field])
 		}
 	}
 
