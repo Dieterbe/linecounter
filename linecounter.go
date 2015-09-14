@@ -115,14 +115,14 @@ func seggregatedLineTracker(index int) {
 	for {
 		select {
 		case <-tick.C:
-			printCounters(" ============================= ")
+			printCounters("===============================")
 			newCounter := make(map[string]int)
 			for key := range counter {
 				newCounter[key] = 0
 			}
 			counter = newCounter
 		case ret := <-exit:
-			printCounters(" === (incomplete interval) === ")
+			printCounters("==== (incomplete interval) ====")
 			os.Exit(ret)
 		case str := <-data:
 			counter[str] += 1
