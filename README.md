@@ -29,9 +29,9 @@ litmus.fake_org_2_endpoint_1.dev1.http.dns [endpoint_id:46 monitor_id:138 collec
 ```
 
 I often need to get insights on this multi-dimensional stream and for example, check which monitor (http vs ping vs ...) creates more volume, etc.
-Which I can do like so:
+I can simply use a tool like sed or tr to split the lines in fields and then select the field I need (here the fourth)
 ```
-$ nsq_metrics_to_stdout --nsqd-tcp-address nsqd:4150 | tr '.' ' ' | linecounter -f 4 --freq 5000
+$ nsq_metrics_to_stdout | tr '.' ' ' | linecounter -f 4 --freq 5000
 2015/09/14 15:24:30 INF    1 [metrics/stdout] (nsqd:4150) connecting to nsqd
 2015/09/14 15:24:30 connected to nsqd
 2015/09/14 15:24:30 INFO starting listener for http/debug on :6060
